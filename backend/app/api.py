@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from starpoint.db import Client
 import clip
 import torch
+from typing import Optional, List
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/32", device=device)
@@ -14,12 +15,12 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
 
-def encode_search_query(search_query):
+def encode_search_query(search_query: str):
     with torch.no_grad():
         # Encode and normalize the search query using CLIP
         text_encoded = model.encode_text(clip.tokenize(search_query).to(device))
@@ -32,18 +33,18 @@ def encode_search_query(search_query):
 class SearchQuery(BaseModel):
     starpoint_api_key: str = Field(..., title="Starpoint API Key")
     starpoint_collection_name: str = Field(..., title="Starpoint Collection Name")
-    query_to_embed: str = Field(None, title="Query to Embed")
+    query_to_embed: Optional[str] = Field(None, title="Query to Embed")
     sql: str = Field(None, title="SQL")
 
 
-@app.get("/search")
+@app.post("/search")
 async def perform_embedding_search(query: SearchQuery):
     starpoint_api_key = query.starpoint_api_key
     starpoint_collection_name = query.starpoint_collection_name
     query_to_embed = query.query_to_embed
-    sql = query.sql
+    sql = query.sql if len(query.sql) != 0 else None
 
-    query_embedding = None
+    query_embedding: List[float] | None = None
     if query_to_embed is not None:
         query_embedding = encode_search_query(query_to_embed).tolist()[0]
 
@@ -51,7 +52,7 @@ async def perform_embedding_search(query: SearchQuery):
     response = starpoint_client.query(
         collection_name=starpoint_collection_name,
         sql=sql,
-        query_embedding=query_embedding[0],
+        query_embedding=query_embedding,
     )
 
     return response
