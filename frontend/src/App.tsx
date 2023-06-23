@@ -30,6 +30,7 @@ import {
   Textarea,
   Wrap,
   ButtonGroup,
+  Badge,
 } from "@chakra-ui/react";
 
 import { InView } from "react-intersection-observer";
@@ -205,9 +206,16 @@ const App = () => {
   const [error, setError] = useState<string | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure({
     defaultIsOpen:
-      config.current.apiKey === undefined || config.current.apiKey === "" || 
-      config.current.collectionName === undefined || config.current.collectionName === "",
+      config.current.apiKey === undefined ||
+      config.current.apiKey === "" ||
+      config.current.collectionName === undefined ||
+      config.current.collectionName === "",
   });
+  const {
+    isOpen: isSchemaOpen,
+    onOpen: onSchemaOpen,
+    onClose: onSchemaClose,
+  } = useDisclosure();
 
   const triggerSearch = useCallback(async () => {
     if (!config.current.apiKey || !config.current.collectionName) {
@@ -260,7 +268,7 @@ const App = () => {
             <IconButton aria-label="settings" onClick={onOpen}>
               <SettingsIcon />
             </IconButton>
-
+            <Button onClick={onSchemaOpen}>View Schema</Button>
             <Button
               disabled={
                 loading ||
@@ -305,8 +313,94 @@ const App = () => {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
+      <Drawer placement="right" onClose={onSchemaClose} isOpen={isSchemaOpen}>
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerBody>
+            <Heading>Schema</Heading>
+            {Object.keys(SCHEMA.inferred_schema.types).map((key) => (
+              <div>
+                <Badge key={key}>{key}</Badge>
+              </div>
+            ))}
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </Box>
   );
 };
 
 export default App;
+
+const SCHEMA = {
+  inferred_schema: {
+    nullability: {
+      __id: false,
+      ai_description: false,
+      ai_primary_landmark_confidence: true,
+      ai_primary_landmark_latitude: true,
+      ai_primary_landmark_longitude: true,
+      ai_primary_landmark_name: true,
+      blur_hash: false,
+      exif_aperture_value: false,
+      exif_camera_make: false,
+      exif_camera_model: false,
+      exif_exposure_time: false,
+      exif_focal_length: false,
+      exif_iso: false,
+      photo_aspect_ratio: false,
+      photo_description: true,
+      photo_featured: false,
+      photo_height: false,
+      photo_id: false,
+      photo_image_url: false,
+      photo_location_city: true,
+      photo_location_country: true,
+      photo_location_latitude: true,
+      photo_location_longitude: true,
+      photo_location_name: true,
+      photo_submitted_at: false,
+      photo_url: false,
+      photo_width: false,
+      photographer_first_name: false,
+      photographer_last_name: true,
+      photographer_username: false,
+      stats_downloads: false,
+      stats_views: false,
+    },
+    types: {
+      __id: ["String"],
+      ai_description: ["String"],
+      ai_primary_landmark_confidence: [],
+      ai_primary_landmark_latitude: [],
+      ai_primary_landmark_longitude: [],
+      ai_primary_landmark_name: [],
+      blur_hash: ["String"],
+      exif_aperture_value: ["String"],
+      exif_camera_make: ["String"],
+      exif_camera_model: ["String"],
+      exif_exposure_time: ["String"],
+      exif_focal_length: ["String"],
+      exif_iso: ["Number"],
+      photo_aspect_ratio: ["Number"],
+      photo_description: ["String"],
+      photo_featured: ["String"],
+      photo_height: ["Number"],
+      photo_id: ["String"],
+      photo_image_url: ["String"],
+      photo_location_city: [],
+      photo_location_country: [],
+      photo_location_latitude: [],
+      photo_location_longitude: [],
+      photo_location_name: [],
+      photo_submitted_at: ["String"],
+      photo_url: ["String"],
+      photo_width: ["Number"],
+      photographer_first_name: ["String"],
+      photographer_last_name: ["String"],
+      photographer_username: ["String"],
+      stats_downloads: ["Number"],
+      stats_views: ["Number"],
+    },
+  },
+} as const;
