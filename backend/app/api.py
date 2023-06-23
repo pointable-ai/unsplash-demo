@@ -13,8 +13,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["https://api.image-search.demo.starpoint.ai", "https://unsplash-demo-backend-gjeoowx5va-uc.a.run.app"],
+    allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
