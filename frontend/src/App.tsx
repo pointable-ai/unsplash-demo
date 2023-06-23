@@ -203,7 +203,11 @@ const App = () => {
   const [results, setResults] = useState<QueryResponse["results"]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure({
+    defaultIsOpen:
+      config.current.apiKey === undefined || config.current.apiKey === "" || 
+      config.current.collectionName === undefined || config.current.collectionName === "",
+  });
 
   const triggerSearch = useCallback(async () => {
     if (!config.current.apiKey || !config.current.collectionName) {
@@ -273,7 +277,7 @@ const App = () => {
       <Box>
         {loading && <Spinner />}
         {error && <div>{error}</div>}
-        { results !== undefined && (
+        {results !== undefined && (
           <Wrap spacing="1rem" padding="1rem" justify="center">
             {results.map((result) => {
               const WIDTH = 320;
