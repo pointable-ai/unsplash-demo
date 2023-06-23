@@ -1,5 +1,5 @@
 # Use the official Python image as the base image
-FROM python:3.9-slim
+FROM docker.io/library/python:3.11-bullseye
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -17,4 +17,4 @@ COPY backend backend
 EXPOSE 8000
 
 # Set the entry point command to run the FastAPI application
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.app.api:app", "--host", "0.0.0.0", "--port", "8000"]
