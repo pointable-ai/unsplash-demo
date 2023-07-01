@@ -203,7 +203,7 @@ const App = () => {
     collectionName: localStorage.getItem(COLLECTION_NAME_KEY) ?? "",
   });
   const [query, setQuery] = useState<string>("");
-  const [sql, setSql] = useState<string>("SELECT * FROM collection;");
+  const [sql, setSql] = useState<string>("");
   const [results, setResults] = useState<QueryResponse["results"]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
