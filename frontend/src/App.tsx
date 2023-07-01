@@ -32,10 +32,10 @@ import {
   ButtonGroup,
   Badge,
 } from "@chakra-ui/react";
-
 import { InView } from "react-intersection-observer";
-
 import { SettingsIcon } from "@chakra-ui/icons";
+
+import { SqlEditor } from "./components/SqlEditor";
 
 export interface SearchQuery {
   starpoint_api_key: string;
@@ -90,7 +90,7 @@ const Settings = (props: SettingsProps) => {
   );
   const [apiKey, setApiKey] = useState(config.current.apiKey);
   const [show, setShow] = useState(false);
-  const handleClick = () => setShow(!show);
+  const handleClick = () => setShow((value) => !value);
 
   const isError = {
     api: apiKey.length === 0,
@@ -150,14 +150,15 @@ const Settings = (props: SettingsProps) => {
 };
 
 interface ImageCardProps {
-  photoId: string;
   photoUrl: string;
+  photoId: string;
   description: string;
   extra: string;
+  showInfo?: boolean;
 }
 
 const ImageCard = (props: ImageCardProps) => {
-  const { description, photoId, photoUrl, extra } = props;
+  const { description, photoId, photoUrl, extra, showInfo } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loadArt, setLoadArt] = useState(false);
   return (
@@ -177,11 +178,13 @@ const ImageCard = (props: ImageCardProps) => {
             )}
           </InView>
         </CardBody>
-        <CardBody paddingTop={0}>
-          <Heading size="md">{photoId}</Heading>
-          <Text>{description}</Text>
-          <Textarea value={extra} readOnly height={300} />
-        </CardBody>
+        {showInfo && (
+          <CardBody paddingTop={0}>
+            <Heading size="md">{photoId}</Heading>
+            <Text>{description}</Text>
+            <Textarea value={extra} readOnly height={300} />
+          </CardBody>
+        )}
       </Card>
       <Modal size="xl" onClose={onClose} isOpen={isOpen} isCentered>
         <ModalOverlay>
@@ -200,7 +203,7 @@ const App = () => {
     collectionName: localStorage.getItem(COLLECTION_NAME_KEY) ?? "",
   });
   const [query, setQuery] = useState<string>("");
-  const [sql, setSql] = useState<string>("");
+  const [sql, setSql] = useState<string>("SELECT * FROM collection;");
   const [results, setResults] = useState<QueryResponse["results"]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -216,6 +219,9 @@ const App = () => {
     onOpen: onSchemaOpen,
     onClose: onSchemaClose,
   } = useDisclosure();
+
+  const [showInfo, setShowInfo] = useState(false);
+  const toggleShowInfo = () => setShowInfo((value) => !value);
 
   const triggerSearch = useCallback(async () => {
     if (!config.current.apiKey || !config.current.collectionName) {
@@ -245,29 +251,26 @@ const App = () => {
         Welcome to Starpoint's Natural Language Image Search Demo!
       </Heading>
 
-      <FormControl>
-        <Stack padding={2}>
-          <InputGroup>
-            <FormLabel width={300}>Natural Language Search</FormLabel>
+      <FormControl width="100%">
+        <Stack padding={2} width="100%">
+          <InputGroup flexDirection="column" my={2}>
+            <FormLabel width={300}>Natural Language Query</FormLabel>
             <Textarea
               placeholder="A road in the forest..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </InputGroup>
-
-          <InputGroup>
-            <FormLabel width={100}>SQL Filter</FormLabel>
-            <Textarea
-              placeholder="SELECT * FROM collection WHERE..."
-              value={sql}
-              onChange={(e) => setSql(e.target.value)}
-            />
+          <InputGroup flexDirection="column" my={2}>
+            <SqlEditor query={sql} onChange={(v) => setSql(v)} />
           </InputGroup>
           <ButtonGroup>
             <IconButton aria-label="settings" onClick={onOpen}>
               <SettingsIcon />
             </IconButton>
+            <Button onClick={toggleShowInfo}>
+              {showInfo ? "Hide Image Info" : "Show Image Info"}
+            </Button>
             <Button onClick={onSchemaOpen}>View Schema</Button>
             <Button
               disabled={
@@ -299,6 +302,7 @@ const App = () => {
                   photoUrl={photoUrl}
                   description={description}
                   extra={JSON.stringify(result, null, 4)}
+                  showInfo={showInfo}
                 />
               );
             })}
